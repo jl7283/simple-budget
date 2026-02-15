@@ -60,16 +60,19 @@ class ErrorCodes:
     BUD_ALREADY_EXISTS = "BUD-002"
     BUD_INVALID_AMOUNT = "BUD-003"
     BUD_UNAUTHORIZED = "BUD-004"
+    BUD_INVALID_MONTH = "BUD-005"  # Added: strict YYYY-MM validation support
     
     # Income errors (INC-xxx)
     INC_NOT_FOUND = "INC-001"
     INC_INVALID_AMOUNT = "INC-002"
     INC_UNAUTHORIZED = "INC-003"
+    INC_INVALID_SOURCE = "INC-004"  # Added: strict non-empty source validation
     
     # Expense errors (EXP-xxx)
     EXP_NOT_FOUND = "EXP-001"
     EXP_INVALID_AMOUNT = "EXP-002"
     EXP_UNAUTHORIZED = "EXP-003"
+    EXP_INVALID_CATEGORY = "EXP-004"  # Added: strict non-empty category validation
     
     # Report errors (RPT-xxx)
     RPT_INVALID_MONTH = "RPT-001"
