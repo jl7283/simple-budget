@@ -8,7 +8,7 @@ from typing import Optional
 class ExpenseCreateRequest(BaseModel):
     """Expense creation request schema."""
     
-    amount: Decimal = Field(..., gt=0, description="Expense amount (must be > 0)")
+    amount: Decimal = Field(..., description="Expense amount")
     category: str = Field(..., min_length=1, max_length=100, description="Expense category")
     date: date_type = Field(..., description="Expense date")
     note: Optional[str] = Field(None, description="Optional note")
