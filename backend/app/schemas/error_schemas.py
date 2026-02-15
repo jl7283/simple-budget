@@ -42,12 +42,13 @@ class ErrorResponse(BaseModel):
 class ErrorCodes:
     """Standard error codes."""
     
-    # Authentication errors (AUTH-xxx)
-    AUTH_INVALID_CREDENTIALS = "AUTH-001"
-    AUTH_USER_EXISTS = "AUTH-002"
-    AUTH_INVALID_TOKEN = "AUTH-003"
-    AUTH_TOKEN_EXPIRED = "AUTH-004"
-    AUTH_UNAUTHORIZED = "AUTH-005"
+    # Authentication errors (AUTH-xxx) — aligned with Week 4 document
+    AUTH_INVALID_TOKEN = "AUTH-001"        # Missing or invalid token
+    AUTH_TOKEN_EXPIRED = "AUTH-002"        # Token expired
+    AUTH_UNAUTHORIZED = "AUTH-003"         # Insufficient permissions (403)
+    AUTH_INVALID_CREDENTIALS = "AUTH-004"  # Invalid login credentials
+    AUTH_USER_EXISTS = "USR-001"           # Email already registered
+
     
     # Validation errors (VAL-xxx)
     VAL_INVALID_INPUT = "VAL-001"
