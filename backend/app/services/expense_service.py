@@ -26,20 +26,24 @@ class ExpenseService:
         
         Business Rules:
         - Amount must be greater than 0
+        - Category must be non-empty (strict)
         - Expense is user-scoped
         
         Raises:
-            ValueError: If amount <= 0
+            ValueError: If amount <= 0 or category invalid
         """
         # Validate amount
         if amount <= 0:
             raise ValueError(f"{ErrorCodes.EXP_INVALID_AMOUNT}:Expense amount must be greater than 0")
         
+        if not isinstance(category, str) or not category.strip():
+            raise ValueError(f"{ErrorCodes.EXP_INVALID_CATEGORY}:Expense category must be provided")
+        
         # Create expense entity
         expense = Expense(
             user_id=user_id,
             amount=amount,
-            category=category,
+            category=category.strip(),
             date=expense_date,
             note=note
         )
