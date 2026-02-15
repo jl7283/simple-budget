@@ -101,7 +101,7 @@ def get_current_user(
                 error=ErrorDetail(
                     code=ErrorCodes.AUTH_INVALID_TOKEN,
                     message="Invalid or expired token"
-                )
+                ).model_dump()
             ).model_dump(),
             headers={"WWW-Authenticate": "Bearer"}
         )
@@ -117,7 +117,7 @@ def get_current_user(
                     error=ErrorDetail(
                         code=ErrorCodes.AUTH_INVALID_TOKEN,
                         message="Invalid token payload"
-                    )
+                    ).model_dump()
                 ).model_dump(),
                 headers={"WWW-Authenticate": "Bearer"}
             )
@@ -131,7 +131,7 @@ def get_current_user(
                     error=ErrorDetail(
                         code=ErrorCodes.AUTH_INVALID_TOKEN,
                         message="User not found"
-                    )
+                    ).model_dump()
                 ).model_dump(),
                 headers={"WWW-Authenticate": "Bearer"}
             )
@@ -145,7 +145,7 @@ def get_current_user(
                 error=ErrorDetail(
                     code=ErrorCodes.AUTH_INVALID_TOKEN,
                     message="Invalid token format"
-                )
+                ).model_dump()
             ).model_dump(),
             headers={"WWW-Authenticate": "Bearer"}
         )
