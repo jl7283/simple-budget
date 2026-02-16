@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: budget_user
+          POSTGRES_PASSWORD: budget_pass
+          POSTGRES_DB: budget_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U budget_user -d budget_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://budget_user:budget_pass@localhost:5432/budget_db
+      SECRET_KEY: test-secret
+      RUN_DB_INIT: "true"
+      API_V1_PREFIX: /api/v1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest -q
