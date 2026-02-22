@@ -1,9 +1,9 @@
 import { Stack } from "expo-router";
-import AppContext from "./context/AppContext";
 import React from "react";
+import AppContext from "./context/AppContext";
 
 export default function RootLayout() {
-  const [jwt, setJwt] = React.useState("not-set-yet");
+  const [jwt, setJwt] = React.useState("");
   return (
     <AppContext.Provider value={{ jwt, setJwt }}>
       <Stack>

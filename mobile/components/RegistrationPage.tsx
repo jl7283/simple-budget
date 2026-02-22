@@ -12,7 +12,6 @@ export default function RegistrationPage() {
 	const setJwt = useContext(AppContext).setJwt;
 useEffect(() => {
 	console.log("Registration Mounted");
-	setJwt("test-jwt-value");
 }, []);
   const handleRegistrationSubmit = async () => {
     console.log("Form Submitted!");
