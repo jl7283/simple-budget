@@ -31,7 +31,7 @@ export default function RegistrationPage() {
     }
     return (
         <>
-            <h1>Register for simple-budget-app!</h1>
+            <Text variant="headlineLarge">Register for simple-budget-app!</Text>
             <Text>{email}</Text>
             <Text>{password}</Text>
             <TextInput

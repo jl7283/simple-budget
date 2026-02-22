@@ -11,7 +11,7 @@ export default function LoginPage() {
     return (
         <>
             <Text>Welcome Back!</Text>
-            <h1>Registration Page</h1>
+            <Text variant="headlineLarge">Login Page</Text>
             <Text>{email}</Text>
             <Text>{password}</Text>
             <TextInput
