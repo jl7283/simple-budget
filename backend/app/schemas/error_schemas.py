@@ -1,38 +1,42 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, Dict, Any
+from typing import Optional, List
 
 
 class ErrorDetail(BaseModel):
-    """Standard error detail schema."""
-    
-    code: str
-    message: str
+    """Week 4 details item schema."""
     field: Optional[str] = None
+    issue: str
     
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "code": "VAL-001",
-                "message": "Invalid input data",
-                "field": "email"
+                "field": "month",
+                "issue": "Month must be in YYYY-MM format"
             }
         }
     )
 
 
 class ErrorResponse(BaseModel):
-    """Standard error response schema."""
-    
-    error: ErrorDetail
+    """Week 4 error envelope schema."""
+    timestamp: str
+    status: int
+    error: str
+    errorCode: str
+    message: str
+    path: str
+    details: Optional[List[ErrorDetail]] = None
     
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "error": {
-                    "code": "VAL-001",
-                    "message": "Invalid input data",
-                    "field": "email"
-                }
+                "timestamp": "2024-03-15T10:30:00Z",
+                "status": 400,
+                "error": "Bad Request",
+                "errorCode": "VAL-001",
+                "message": "Invalid input data",
+                "path": "/api/v1/reports/summary",
+                "details": [{"field": "month", "issue": "Month must be in YYYY-MM format"}]
             }
         }
     )
@@ -42,12 +46,16 @@ class ErrorResponse(BaseModel):
 class ErrorCodes:
     """Standard error codes."""
     
-    # Authentication errors (AUTH-xxx)
-    AUTH_INVALID_CREDENTIALS = "AUTH-001"
-    AUTH_USER_EXISTS = "AUTH-002"
-    AUTH_INVALID_TOKEN = "AUTH-003"
-    AUTH_TOKEN_EXPIRED = "AUTH-004"
-    AUTH_UNAUTHORIZED = "AUTH-005"
+    # Authentication errors (AUTH-xxx) — aligned with Week 4 document
+    AUTH_INVALID_TOKEN = "AUTH-001"        # Missing or invalid token
+    AUTH_TOKEN_EXPIRED = "AUTH-002"        # Token expired
+    AUTH_UNAUTHORIZED = "AUTH-003"         # Insufficient permissions (403)
+    AUTH_INVALID_CREDENTIALS = "AUTH-004"  # Invalid login credentials
+    
+    # User errors (USR-xxx) — aligned with Week 4 document
+    USER_EXISTS = "USR-001"           # User with given email already exists    
+    USER_NOT_FOUND = "USR-002"        # User with given email not found
+
     
     # Validation errors (VAL-xxx)
     VAL_INVALID_INPUT = "VAL-001"
@@ -60,16 +68,19 @@ class ErrorCodes:
     BUD_ALREADY_EXISTS = "BUD-002"
     BUD_INVALID_AMOUNT = "BUD-003"
     BUD_UNAUTHORIZED = "BUD-004"
+    BUD_INVALID_MONTH = "BUD-005"  # Added: strict YYYY-MM validation support
     
     # Income errors (INC-xxx)
     INC_NOT_FOUND = "INC-001"
     INC_INVALID_AMOUNT = "INC-002"
     INC_UNAUTHORIZED = "INC-003"
+    INC_INVALID_SOURCE = "INC-004"  # Added: strict non-empty source validation
     
     # Expense errors (EXP-xxx)
     EXP_NOT_FOUND = "EXP-001"
     EXP_INVALID_AMOUNT = "EXP-002"
     EXP_UNAUTHORIZED = "EXP-003"
+    EXP_INVALID_CATEGORY = "EXP-004"  # Added: strict non-empty category validation
     
     # Report errors (RPT-xxx)
     RPT_INVALID_MONTH = "RPT-001"

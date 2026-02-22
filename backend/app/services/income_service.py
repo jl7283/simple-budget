@@ -24,20 +24,24 @@ class IncomeService:
         
         Business Rules:
         - Amount must be greater than 0
+        - Source must be non-empty (strict)
         - Income is user-scoped
         
         Raises:
-            ValueError: If amount <= 0
+            ValueError: If amount <= 0 or source invalid
         """
         # Validate amount
         if amount <= 0:
             raise ValueError(f"{ErrorCodes.INC_INVALID_AMOUNT}:Income amount must be greater than 0")
         
+        if not isinstance(source, str) or not source.strip():
+            raise ValueError(f"{ErrorCodes.INC_INVALID_SOURCE}:Income source must be provided")
+
         # Create income entity
         income = Income(
             user_id=user_id,
             amount=amount,
-            source=source,
+            source=source.strip(),
             date=income_date
         )
         
