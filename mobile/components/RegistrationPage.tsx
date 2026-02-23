@@ -19,9 +19,9 @@ export default function RegistrationPage() {
     }
   };
 
-useEffect(() => {
-	console.log("Registration Mounted");
-}, []);
+  useEffect(() => {
+    console.log("Registration Mounted");
+  }, []);
   const handleRegistrationSubmit = async () => {
     console.log("Form Submitted!");
     const url = "http://localhost:8000/api/v1/auth/register";
