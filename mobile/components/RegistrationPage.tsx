@@ -1,8 +1,8 @@
-import { useContext, useEffect, useState } from "react";
-import { Button, Text, TextInput } from "react-native-paper";
+import AppContext from "@/app/context/AppContext";
 import AlertMessage from "@/components/utility/AlertMessage";
 import sharedStyles from "@/styles/shared";
-import AppContext from "@/app/context/AppContext";
+import { useContext, useEffect, useState } from "react";
+import { Button, Text, TextInput } from "react-native-paper";
 
 export default function RegistrationPage() {
   const [email, setEmail] = useState("");
@@ -12,7 +12,6 @@ export default function RegistrationPage() {
 	const setJwt = useContext(AppContext).setJwt;
 useEffect(() => {
 	console.log("Registration Mounted");
-	setJwt("test-jwt-value");
 }, []);
   const handleRegistrationSubmit = async () => {
     console.log("Form Submitted!");
