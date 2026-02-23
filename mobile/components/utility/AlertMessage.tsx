@@ -12,7 +12,7 @@ export default function AlertMessage({
 	};
 
 	const bannerTheme = {
-		backgroundColor: "red"
+		backgroundColor: isError ? "red" : "green"
 	}
   return (
     <Banner style={bannerTheme} visible={true}>

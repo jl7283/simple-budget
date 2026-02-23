@@ -9,6 +9,7 @@ export default function RegistrationPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 	const setJwt = useContext(AppContext).setJwt;
 useEffect(() => {
 	console.log("Registration Mounted");
@@ -35,6 +36,8 @@ useEffect(() => {
       if (response.ok) {
         // Registration successful, handle accordingly (e.g., navigate to login page)
         console.log("Registration successful!");
+        setErrorMessage("");
+        setSuccessMessage("Registration successful! Please log in.");
       } else {
         // Handle registration failure (e.g., display error message)
         console.error("Registration failed:", data);
@@ -51,6 +54,7 @@ useEffect(() => {
         Register for SimpleBudgetApp
       </Text>
       {errorMessage && <AlertMessage message={errorMessage} />}
+      {successMessage && <AlertMessage isError={false} message={successMessage} />}
       <TextInput
         mode="outlined"
         style={sharedStyles.lightMargin.textInput}
