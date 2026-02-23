@@ -177,8 +177,10 @@ class TestBudgetService:
 
     def test_get_current_month_budget_not_found(self):
         """Test current month budget retrieval when budget does not exist."""
+        # Arrange
         self.mock_repo.get_by_user_and_month.return_value = None
 
+        # Act & Assert
         with pytest.raises(ValueError) as exc_info:
             self.service.get_current_month_budget(self.user_id)
 
