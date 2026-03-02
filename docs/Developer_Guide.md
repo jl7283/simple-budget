@@ -13,9 +13,10 @@ Simple Budget is built using:
 
 Frontend:
 
-- React Native (Expo)
-- Expo Router (navigation)
-- React Native Paper (UI components)
+- React
+- React Native
+- Expo
+- Axios (API communication)
 
 Backend:
 
@@ -129,7 +130,8 @@ Steps:
 npm install
 npx expo start
 
-Frontend runs in Expo development mode (Expo Go, Android emulator, iOS simulator, or web).
+Frontend runs at:
+http://localhost:8080
 
 ---
 
