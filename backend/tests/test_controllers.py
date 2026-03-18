@@ -3,6 +3,8 @@ Controller-layer tests: API endpoint behaviour (success + validation + auth).
 
 These tests exercise FastAPI routes directly through TestClient.
 Service dependencies are mocked — we are testing HTTP wiring, not business logic.
+
+Commit: test: add API endpoint tests for all controllers (success + validation)
 """
 
 import pytest
@@ -623,9 +625,10 @@ class TestReportController:
         assert resp.status_code == 200
         body = resp.json()
         assert body["month"] == "2024-03"
-        assert "total_income" in body
-        assert "total_expenses" in body
-        assert "net_balance" in body
+        assert "totalIncome" in body
+        assert "totalExpenses" in body
+        assert "net" in body
+        assert "byCategory" in body
 
     def test_get_monthly_summary_missing_month_returns_400(self, auth_client):
         client = auth_client["client"]
