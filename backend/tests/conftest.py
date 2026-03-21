@@ -121,31 +121,6 @@ def token_data(sample_user_id) -> TokenData:
 
 
 @pytest.fixture
-def mock_auth_service():
-    return Mock()
-
-
-@pytest.fixture
-def mock_expense_service():
-    return Mock()
-
-
-@pytest.fixture
-def mock_budget_service():
-    return Mock()
-
-
-@pytest.fixture
-def mock_income_service():
-    return Mock()
-
-
-@pytest.fixture
-def mock_report_service():
-    return Mock()
-
-
-@pytest.fixture
 def service_mocks(sample_user_id):
     now = datetime.now(timezone.utc)
 
@@ -278,14 +253,14 @@ def apply_auth_override(token_data):
 
 
 @pytest.fixture
-def auth_client(
-    token_data,
-    mock_auth_service,
-    mock_expense_service,
-    mock_budget_service,
-    mock_income_service,
-    mock_report_service,
-):
+def auth_client(token_data):
+    """Authenticated client with all services mocked for testing protected endpoints."""
+    mock_auth_service = Mock()
+    mock_expense_service = Mock()
+    mock_budget_service = Mock()
+    mock_income_service = Mock()
+    mock_report_service = Mock()
+
     app.dependency_overrides[get_db] = _fake_db
     app.dependency_overrides[get_current_user] = lambda: token_data
     app.dependency_overrides[get_auth_service] = lambda: mock_auth_service
@@ -308,13 +283,14 @@ def auth_client(
 
 
 @pytest.fixture
-def unauth_client(
-    mock_auth_service,
-    mock_expense_service,
-    mock_budget_service,
-    mock_income_service,
-    mock_report_service,
-):
+def unauth_client():
+    """Unauthenticated client with all services mocked for testing public endpoints."""
+    mock_auth_service = Mock()
+    mock_expense_service = Mock()
+    mock_budget_service = Mock()
+    mock_income_service = Mock()
+    mock_report_service = Mock()
+
     app.dependency_overrides[get_db] = _fake_db
     app.dependency_overrides[get_auth_service] = lambda: mock_auth_service
     app.dependency_overrides[get_expense_service] = lambda: mock_expense_service
