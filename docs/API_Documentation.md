@@ -32,19 +32,23 @@ Creates a new user.
 
 Request:
 
+```json
 {
-"email": "user@example.com",
-"password": "securepassword123",
-"full_name": "Jane Doe"
+	"email": "user@example.com",
+	"password": "securepassword123",
+	"full_name": "Jane Doe"
 }
+```
 
 Response:
 
+```json
 {
-"id": "550e8400-e29b-41d4-a716-446655440000",
-"email": "user@example.com",
-"full_name": "Jane Doe"
+	"id": "550e8400-e29b-41d4-a716-446655440000",
+	"email": "user@example.com",
+	"full_name": "Jane Doe"
 }
+```
 
 ---
 
@@ -54,17 +58,21 @@ Returns JWT token.
 
 Request:
 
+```json
 {
-"email": "user@example.com",
-"password": "securepassword123"
+	"email": "user@example.com",
+	"password": "securepassword123"
 }
+```
 
 Response:
 
+```json
 {
-"access_token": "<jwt-token>",
-"token_type": "bearer"
+	"access_token": "<jwt-token>",
+	"token_type": "bearer"
 }
+```
 
 ---
 
@@ -76,21 +84,25 @@ Requires authentication.
 
 Request:
 
+```json
 {
-"month": "2024-03",
-"amount": 2000
+	"month": "2024-03",
+	"amount": 2000
 }
+```
 
 Response:
 
+```json
 {
-"budgetId": "550e8400-e29b-41d4-a716-446655440000",
-"userId": "660e8400-e29b-41d4-a716-446655440000",
-"month": "2024-03",
-"totalAmount": 2000,
-"createdAt": "2024-03-01T00:00:00Z",
-"updatedAt": "2024-03-01T00:00:00Z"
+	"budgetId": "550e8400-e29b-41d4-a716-446655440000",
+	"userId": "660e8400-e29b-41d4-a716-446655440000",
+	"month": "2024-03",
+	"totalAmount": 2000,
+	"createdAt": "2024-03-01T00:00:00Z",
+	"updatedAt": "2024-03-01T00:00:00Z"
 }
+```
 
 ---
 
@@ -110,12 +122,14 @@ Requires authentication.
 
 Request:
 
+```json
 {
-"amount": 100,
-"category": "Food",
-"date": "2024-03-10",
-"note": "Groceries"
+	"amount": 100,
+	"category": "Food",
+	"date": "2024-03-10",
+	"note": "Groceries"
 }
+```
 
 ---
 
@@ -127,22 +141,26 @@ Requires authentication.
 
 Request:
 
+```json
 {
-"amount": 3000,
-"source": "Salary",
-"date": "2024-03-01"
+	"amount": 3000,
+	"source": "Salary",
+	"date": "2024-03-01"
 }
+```
 
 Response:
 
+```json
 {
-"incomeId": "550e8400-e29b-41d4-a716-446655440000",
-"userId": "660e8400-e29b-41d4-a716-446655440000",
-"amount": 3000,
-"source": "Salary",
-"date": "2024-03-01",
-"createdAt": "2024-03-01T12:00:00Z"
+	"incomeId": "550e8400-e29b-41d4-a716-446655440000",
+	"userId": "660e8400-e29b-41d4-a716-446655440000",
+	"amount": 3000,
+	"source": "Salary",
+	"date": "2024-03-01",
+	"createdAt": "2024-03-01T12:00:00Z"
 }
+```
 
 ---
 
@@ -162,21 +180,41 @@ Requires authentication.
 
 Response:
 
+```json
 {
-"month": "2024-03",
-"totalIncome": 3000,
-"totalExpenses": 800,
-"net": 2200,
-"byCategory": {
-"Food": 300,
-"Transport": 500
-},
-"generatedAt": "2026-02-16T02:38:52Z"
+	"month": "2024-03",
+	"totalIncome": 3000,
+	"totalExpenses": 800,
+	"net": 2200,
+	"byCategory": {
+		"Food": 300,
+		"Transport": 500
+	},
+	"generatedAt": "2026-02-16T02:38:52Z"
 }
+```
 
 ---
 
 ## Error Codes
+
+Error responses include both:
+
+- HTTP status code (for transport-level semantics)
+- Domain `errorCode` field in the JSON envelope (for application-level handling)
+
+Typical error envelope:
+
+```json
+{
+	"timestamp": "2026-03-21T12:00:00Z",
+	"status": 401,
+	"error": "Unauthorized",
+	"errorCode": "AUTH-001",
+	"message": "Missing or invalid token",
+	"path": "/api/v1/expenses/current-month"
+}
+```
 
 | Code | Meaning               |
 | ---- | --------------------- |
