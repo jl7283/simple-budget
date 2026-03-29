@@ -81,11 +81,6 @@ jobs:
         run: |
           pytest -q
 
-      - name: Run Epic 2 security and error consistency tests
-        working-directory: backend
-        run: |
-          pytest -q tests/test_security.py tests/test_error_handlers.py
-
   mobile-tests:
     needs: changes
     if: needs.changes.outputs.mobile == 'true'
