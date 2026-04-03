@@ -6,6 +6,7 @@ origin/main and the expanded API/error/dependency tests on this branch.
 """
 
 import os
+from itertools import count
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from types import SimpleNamespace
@@ -16,6 +17,8 @@ import pytest
 
 # Ensure app imports don't try to connect to real Postgres during test startup.
 os.environ.setdefault("DATABASE_URL", "postgresql://fake:fake@localhost/fake")
+# Disable rate limiting for unit tests so SlowAPIMiddleware is never added.
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 from fastapi.testclient import TestClient  # noqa: E402
 
@@ -42,6 +45,14 @@ FIXED_USER_ID: UUID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 FIXED_EXPENSE_ID: UUID = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
 FIXED_BUDGET_ID: UUID = UUID("cccccccc-cccc-cccc-cccc-cccccccccccc")
 FIXED_INCOME_ID: UUID = UUID("dddddddd-dddd-dddd-dddd-dddddddddddd")
+_CLIENT_HOST_COUNTER = count(11)
+
+
+def _next_client_host() -> str:
+    # Use a unique client host per fixture invocation so rate-limit buckets
+    # are isolated even if limiter state leaks across client contexts.
+    host_octet = 1 + ((next(_CLIENT_HOST_COUNTER) - 1) % 254)
+    return f"203.0.113.{host_octet}"
 
 
 def make_user(
@@ -236,7 +247,11 @@ def client(service_mocks):
     app.dependency_overrides[get_expense_service] = lambda: service_mocks["expense"]
     app.dependency_overrides[get_report_service] = lambda: service_mocks["report"]
 
-    with TestClient(app, raise_server_exceptions=False) as test_client:
+    with TestClient(
+        app,
+        raise_server_exceptions=False,
+        client=(_next_client_host(), 50000),
+    ) as test_client:
         yield test_client
 
     app.dependency_overrides.clear()
@@ -259,7 +274,11 @@ def auth_client(token_data):
     app.dependency_overrides[get_income_service] = lambda: mock_income_service
     app.dependency_overrides[get_report_service] = lambda: mock_report_service
 
-    with TestClient(app, raise_server_exceptions=False) as test_client:
+    with TestClient(
+        app,
+        raise_server_exceptions=False,
+        client=(_next_client_host(), 50000),
+    ) as test_client:
         yield {
             "client": test_client,
             "auth_service": mock_auth_service,
@@ -288,7 +307,11 @@ def unauth_client():
     app.dependency_overrides[get_income_service] = lambda: mock_income_service
     app.dependency_overrides[get_report_service] = lambda: mock_report_service
 
-    with TestClient(app, raise_server_exceptions=False) as test_client:
+    with TestClient(
+        app,
+        raise_server_exceptions=False,
+        client=(_next_client_host(), 50000),
+    ) as test_client:
         yield {
             "client": test_client,
             "auth_service": mock_auth_service,
