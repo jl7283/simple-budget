@@ -38,7 +38,7 @@ export default function RegistrationPage() {
   }, [isFocused]);
   const handleRegistrationSubmit = async () => {
     console.log("Form Submitted!");
-    if (password !== confirmPassword) {
+    if (confirmPassword && password !== confirmPassword) {
       setSuccessMessage("");
       setErrorMessage("Passwords do not match");
       return;
