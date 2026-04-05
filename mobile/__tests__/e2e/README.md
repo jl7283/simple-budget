@@ -1,6 +1,6 @@
 # E2E Tests for Mobile App
 
-This directory contains end-to-end (E2E) tests for the Simple Budget mobile application. These tests verify complete user flows and integration between components, focusing on real-world usage patterns rather than isolated unit tests.
+This directory contains component-level integration tests for the Simple Budget mobile application. These tests verify key user flows and route guards by rendering screens with mocked network and navigation dependencies.
 
 ## Overview
 
@@ -36,21 +36,16 @@ Tests the complete expense creation workflow including:
 - Forms clear after successful submission
 - Network errors are handled gracefully
 
-### 3. **navigation.e2e.test.tsx** - Navigation & Integration
-Tests navigation flows and cross-component interactions:
-- Navigation from welcome page to login/registration
-- Tab navigation in authenticated state
+### 3. **navigation.e2e.test.tsx** - Route Guards & Screen Rendering
+Tests authenticated and unauthenticated rendering behavior:
 - Redirect logic based on authentication status
-- Error recovery and retry mechanisms
-- Complete user journeys from welcome through expense creation
+- Welcome page rendering with budget and expenses data
+- Home page visibility with authenticated JWT
 
 **Key Scenarios:**
-- Unauthenticated users see welcome page
-- Login/registration buttons navigate correctly
+- Unauthenticated users are redirected to login
+- Welcome page renders current month budget and expenses for authenticated users
 - Home page loads with authenticated JWT
-- Unauthorized requests trigger re-authentication
-- Session expiration is handled gracefully
-- UI state persists across navigation
 
 ## Running Tests
 

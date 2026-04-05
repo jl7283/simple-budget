@@ -38,6 +38,12 @@ export default function RegistrationPage() {
   }, [isFocused]);
   const handleRegistrationSubmit = async () => {
     console.log("Form Submitted!");
+    if (password !== confirmPassword) {
+      setSuccessMessage("");
+      setErrorMessage("Passwords do not match");
+      return;
+    }
+
     const url = "http://localhost:8000/api/v1/auth/register";
     const options = {
       method: "POST",
@@ -62,6 +68,7 @@ export default function RegistrationPage() {
         setEmail("");
         setFullName("");
         setPassword("");
+        setConfirmPassword("");
         setTimeout(() => {
           setSuccessMessage("");
           setErrorMessage("");
