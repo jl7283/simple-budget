@@ -32,6 +32,16 @@ from app.middleware.error_handler import (
 settings = get_settings()
 
 
+def _conditional_limit(limit_value: str):
+    """Apply slowapi limit only when rate limiting is enabled."""
+    def _decorator(func):
+        if not settings.RATE_LIMIT_ENABLED:
+            return func
+        return limiter.limit(limit_value)(func)
+
+    return _decorator
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Initialize shared resources at app startup."""
@@ -83,11 +93,12 @@ app.include_router(report_router, prefix=settings.API_V1_PREFIX)
 
 
 
-# Simple endpoint for rate limit testing (must be after app is defined and all routers)
-@app.get("/ratelimit-test", tags=["Test"])
-@limiter.limit("3/minute")
-async def ratelimit_test(request: Request):
-    return {"message": "ok"}
+if settings.TEST_ENDPOINTS_ENABLED:
+    # Test-only endpoint for pure rate-limit validation.
+    @app.get("/ratelimit-test", tags=["Test"])
+    @_conditional_limit("3/minute")
+    async def ratelimit_test(request: Request):
+        return {"message": "ok"}
 
 # Health check endpoint (must be after all routers and test endpoints)
 @app.get("/health", tags=["Health"])

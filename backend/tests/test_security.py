@@ -1,12 +1,40 @@
-#
+"""
+Sprint 2 — Security hardening tests.
+
+Covers:
+  A. Login lockout (per-email, application layer)
+    B. Rate limiting (per-IP, network layer, pure endpoint)
+  C. CORS headers (method restrictions)
+  D. Secret key validation
+
+Run alone:
+    pytest tests/test_security.py -v
+
+Run with coverage:
+    pytest tests/test_security.py --cov=app --cov-report=term-missing -v
+"""
+
+import pytest
+from unittest.mock import Mock, patch
+from datetime import datetime, timedelta, timezone
+
+from tests.conftest import (
+    make_user,
+    FIXED_USER_ID,
+    assert_error_shape,
+)
+from app.schemas.error_schemas import ErrorCodes
+from app.config import get_settings
+
+
 # Pure rate limiting test endpoint
-#
 def test_ratelimit_test_endpoint(monkeypatch):
     import importlib
     from fastapi.testclient import TestClient
     from unittest.mock import patch
 
     monkeypatch.setenv("RATE_LIMIT_ENABLED", "true")
+    monkeypatch.setenv("TEST_ENDPOINTS_ENABLED", "true")
     get_settings.cache_clear()
     try:
         import app.rate_limiter as rate_limiter_module
@@ -42,33 +70,6 @@ def test_ratelimit_test_endpoint(monkeypatch):
     finally:
         # Prevent cached settings from leaking into subsequent test modules.
         get_settings.cache_clear()
-"""
-Sprint 2 — Security hardening tests.
-
-Covers:
-  A. Login lockout (per-email, application layer)
-    B. Rate limiting (per-IP, network layer, pure endpoint)
-  C. CORS headers (method restrictions)
-  D. Secret key validation
-
-Run alone:
-    pytest tests/test_security.py -v
-
-Run with coverage:
-    pytest tests/test_security.py --cov=app --cov-report=term-missing -v
-"""
-
-import pytest
-from unittest.mock import Mock, patch
-from datetime import datetime, timedelta, timezone
-
-from tests.conftest import (
-    make_user,
-    FIXED_USER_ID,
-    assert_error_shape,
-)
-from app.schemas.error_schemas import ErrorCodes
-from app.config import get_settings
 
 
 

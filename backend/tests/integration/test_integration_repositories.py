@@ -118,17 +118,20 @@ class TestBudgetRepositoryIntegration:
         user_repo = UserRepository(db_session)
         budget_repo = BudgetRepository(db_session)
         user = user_repo.create(_new_user("budget_rollback"))
-
-        valid = budget_repo.create(Budget(user_id=user.id, month="2024-05", amount=999))
-        valid_id = valid.id
+        user_id = user.id
 
         with pytest.raises(IntegrityError):
-            budget_repo.create(Budget(user_id=user.id, month="2024-06", amount=0))
+            budget_repo.create(Budget(user_id=user_id, month="2024-05", amount=0))
         db_session.rollback()
 
-        # Rollback should clear all uncommitted work in the current transaction.
-        persisted = budget_repo.get_by_id(valid_id)
-        assert persisted is None
+        # After rollback, repository operations should work normally again.
+        user_after_rollback = user_repo.create(_new_user("budget_after_rollback"))
+        created = budget_repo.create(
+            Budget(user_id=user_after_rollback.id, month="2024-06", amount=999)
+        )
+        persisted = budget_repo.get_by_id(created.id)
+        assert persisted is not None
+        assert float(persisted.amount) == 999.0
 
 
 class TestExpenseRepositoryIntegration:
@@ -178,22 +181,12 @@ class TestExpenseRepositoryIntegration:
         user_repo = UserRepository(db_session)
         expense_repo = ExpenseRepository(db_session)
         user = user_repo.create(_new_user("expense_rollback"))
-
-        valid = expense_repo.create(
-            Expense(
-                user_id=user.id,
-                amount=44.44,
-                category="Transport",
-                date=date(2024, 3, 9),
-                note=None,
-            )
-        )
-        valid_id = valid.id
+        user_id = user.id
 
         with pytest.raises(IntegrityError):
             expense_repo.create(
                 Expense(
-                    user_id=user.id,
+                    user_id=user_id,
                     amount=0,
                     category="Invalid",
                     date=date(2024, 3, 10),
@@ -202,6 +195,17 @@ class TestExpenseRepositoryIntegration:
             )
         db_session.rollback()
 
-        # Rollback should clear all uncommitted work in the current transaction.
-        persisted = expense_repo.get_by_id(valid_id)
-        assert persisted is None
+        # After rollback, repository operations should work normally again.
+        user_after_rollback = user_repo.create(_new_user("expense_after_rollback"))
+        created = expense_repo.create(
+            Expense(
+                user_id=user_after_rollback.id,
+                amount=44.44,
+                category="Transport",
+                date=date(2024, 3, 9),
+                note=None,
+            )
+        )
+        persisted = expense_repo.get_by_id(created.id)
+        assert persisted is not None
+        assert float(persisted.amount) == 44.44

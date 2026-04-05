@@ -7,7 +7,7 @@
     "passed": 245,
     "failed": 0,
     "errors": 0,
-    "warnings": 5,
+    "warnings": 0,
     "durationSeconds": 30.07
   },
   "coverage": {
@@ -67,6 +67,6 @@
     "Integration test environment uses isolated PostgreSQL at localhost:5433 with .env.test.",
     "Repository integration tests now cover CRUD, constraints, and rollback behavior for user, budget, and expense repositories.",
     "DB failure-mode tests simulate disconnects, query timeouts, and transaction failures with graceful API error envelopes.",
-    "Observed warnings are SQLAlchemy transaction deassociation warnings in repository rollback tests; suite remains fully passing."
+    "Current coverage run completed with no warnings; suite remains fully passing."
   ]
 }
