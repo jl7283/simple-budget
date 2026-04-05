@@ -1,3 +1,5 @@
+
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
@@ -79,6 +81,15 @@ app.include_router(expense_router, prefix=settings.API_V1_PREFIX)
 app.include_router(report_router, prefix=settings.API_V1_PREFIX)
 
 
+
+
+# Simple endpoint for rate limit testing (must be after app is defined and all routers)
+@app.get("/ratelimit-test", tags=["Test"])
+@limiter.limit("3/minute")
+async def ratelimit_test(request: Request):
+    return {"message": "ok"}
+
+# Health check endpoint (must be after all routers and test endpoints)
 @app.get("/health", tags=["Health"])
 @limiter.exempt
 async def health_check():
@@ -89,7 +100,7 @@ async def health_check():
         "version": settings.APP_VERSION,
     }
 
-
+# Root endpoint (must be after all routers and test endpoints)
 @app.get("/", tags=["Root"])
 async def root():
     """Root endpoint."""

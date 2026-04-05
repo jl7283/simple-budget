@@ -86,10 +86,15 @@ def db_session():
     transaction = connection.begin()
     SessionFactory = sessionmaker(bind=connection, autocommit=False, autoflush=False)
     session = SessionFactory()
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
+    try:
+        yield session
+    finally:
+        session.close()
+        # Some tests intentionally call session.rollback() after DB errors,
+        # which can deassociate the outer transaction. Roll back only if active.
+        if getattr(transaction, "is_active", False):
+            transaction.rollback()
+        connection.close()
 
 
 @pytest.fixture(scope="function")

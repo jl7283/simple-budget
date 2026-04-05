@@ -85,3 +85,31 @@ Current consolidated test architecture:
 - `tests/test_http_controllers.py`: endpoint/controller coverage for auth, budgets, expenses, incomes, and reports.
 - `tests/test_error_handlers.py`: middleware and dependency error handling coverage, including auth failure paths.
 - `tests/test_auth_service.py`, `tests/test_budget_service.py`, `tests/test_expense_service.py`, `tests/test_income_service.py`, `tests/test_report_service.py`: service-layer unit tests.
+
+## Database Migrations (Alembic)
+
+Alembic scaffolding is wired to application settings in `migrations/env.py` and uses
+`app.models.base.Base.metadata` for autogeneration.
+
+Common commands (run from `backend/`):
+
+```bash
+# Use .env.test as the DB source (recommended for local/dev checks)
+ENV_FILE=.env.test python -m alembic current
+
+# Generate a migration from model changes
+ENV_FILE=.env.test python -m alembic revision --autogenerate -m "describe_change"
+
+# Apply all migrations
+ENV_FILE=.env.test python -m alembic upgrade head
+
+# Roll back one revision
+ENV_FILE=.env.test python -m alembic downgrade -1
+```
+
+PowerShell equivalent:
+
+```powershell
+$env:ENV_FILE = '.env.test'
+python -m alembic upgrade head
+```

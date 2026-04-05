@@ -12,6 +12,16 @@ settings = get_settings()
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
 
+def _conditional_limit(limit_value: str):
+    """Apply slowapi limit only when rate limiting is enabled."""
+    def _decorator(func):
+        if not settings.RATE_LIMIT_ENABLED:
+            return func
+        return limiter.limit(limit_value)(func)
+
+    return _decorator
+
+
 @router.get(
     "/summary",
     response_model=MonthlySummaryResponse,
@@ -23,7 +33,7 @@ router = APIRouter(prefix="/reports", tags=["Reports"])
         429: {"description": "Too many report requests"},
     },
 )
-@limiter.limit(settings.REPORT_RATE_LIMIT)
+@_conditional_limit(settings.REPORT_RATE_LIMIT)
 async def get_monthly_summary(
     request: Request,
     month: str = Query(
