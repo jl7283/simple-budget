@@ -1,0 +1,15 @@
+Alembic migration workspace for the backend service.
+
+Key files:
+- `../alembic.ini`: Alembic configuration entrypoint.
+- `env.py`: migration environment wired to app settings and metadata.
+- `versions/`: generated revision files.
+
+Typical flow (from `backend/`):
+1. Set DB source for the run, e.g. `ENV_FILE=.env.test`.
+2. Generate revision:
+	`python -m alembic revision --autogenerate -m "your_message"`
+3. Apply migration:
+	`python -m alembic upgrade head`
+4. Roll back if needed:
+	`python -m alembic downgrade -1`

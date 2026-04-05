@@ -1,3 +1,5 @@
+
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
@@ -28,6 +30,16 @@ from app.middleware.error_handler import (
 )
 
 settings = get_settings()
+
+
+def _conditional_limit(limit_value: str):
+    """Apply slowapi limit only when rate limiting is enabled."""
+    def _decorator(func):
+        if not settings.RATE_LIMIT_ENABLED:
+            return func
+        return limiter.limit(limit_value)(func)
+
+    return _decorator
 
 
 @asynccontextmanager
@@ -79,6 +91,16 @@ app.include_router(expense_router, prefix=settings.API_V1_PREFIX)
 app.include_router(report_router, prefix=settings.API_V1_PREFIX)
 
 
+
+
+if settings.TEST_ENDPOINTS_ENABLED:
+    # Test-only endpoint for pure rate-limit validation.
+    @app.get("/ratelimit-test", tags=["Test"])
+    @_conditional_limit("3/minute")
+    async def ratelimit_test(request: Request):
+        return {"message": "ok"}
+
+# Health check endpoint (must be after all routers and test endpoints)
 @app.get("/health", tags=["Health"])
 @limiter.exempt
 async def health_check():
@@ -89,7 +111,7 @@ async def health_check():
         "version": settings.APP_VERSION,
     }
 
-
+# Root endpoint (must be after all routers and test endpoints)
 @app.get("/", tags=["Root"])
 async def root():
     """Root endpoint."""

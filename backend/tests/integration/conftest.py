@@ -10,6 +10,7 @@ Run from the backend directory:
 """
 
 import pytest
+import os
 from pathlib import Path
 from typing import Generator
 from unittest.mock import patch
@@ -35,11 +36,22 @@ if not ENV_TEST_PATH.exists():
 
 
 # Load .env.test BEFORE any app import.
+# Keep override=False so CI-provided env vars (like DATABASE_URL on port 5432)
+# are preserved, while local runs still get defaults from .env.test.
 # .env.test sets RATE_LIMIT_ENABLED=false which tells main.py to skip
 # SlowAPIMiddleware entirely. This is the correct fix — no middleware
 # patching needed.
-from dotenv import load_dotenv
-load_dotenv(dotenv_path=str(ENV_TEST_PATH), override=True)
+from dotenv import load_dotenv, dotenv_values
+load_dotenv(dotenv_path=str(ENV_TEST_PATH), override=False)
+
+# tests/conftest.py seeds a fake DATABASE_URL for unit test safety.
+# For integration tests, swap in .env.test only when DB URL is missing/fake.
+current_db_url = os.getenv("DATABASE_URL", "")
+if not current_db_url or current_db_url.endswith("/fake"):
+    env_values = dotenv_values(str(ENV_TEST_PATH))
+    fallback_db_url = env_values.get("DATABASE_URL")
+    if fallback_db_url:
+        os.environ["DATABASE_URL"] = fallback_db_url
 
 
 # Clear lru_cache so Settings re-reads the env vars we just loaded.
@@ -49,6 +61,7 @@ get_settings.cache_clear()
 
 # Import app after env is loaded so all settings are correct.
 from sqlalchemy import create_engine
+from sqlalchemy import event
 from sqlalchemy.orm import sessionmaker, Session
 from fastapi.testclient import TestClient
 
@@ -81,15 +94,29 @@ def create_tables():
 
 @pytest.fixture(scope="function")
 def db_session():
-    """Session whose transaction rolls back after every test."""
+    """Session isolated per test using an outer transaction + SAVEPOINT."""
     connection = _engine.connect()
-    transaction = connection.begin()
+    outer_transaction = connection.begin()
     SessionFactory = sessionmaker(bind=connection, autocommit=False, autoflush=False)
     session = SessionFactory()
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
+
+    # Open a SAVEPOINT so tests can call commit()/rollback() safely.
+    session.begin_nested()
+
+    @event.listens_for(session, "after_transaction_end")
+    def _restart_savepoint(sess, txn):
+        if txn.nested and not txn._parent.nested:
+            if connection.in_transaction():
+                sess.begin_nested()
+
+    try:
+        yield session
+    finally:
+        event.remove(session, "after_transaction_end", _restart_savepoint)
+        session.close()
+        if outer_transaction.is_active:
+            outer_transaction.rollback()
+        connection.close()
 
 
 @pytest.fixture(scope="function")

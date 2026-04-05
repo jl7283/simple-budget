@@ -77,7 +77,7 @@ JWT Authentication
 
 Pytest
 
-Flyway (database migrations)
+Alembic (database migrations)
 
 GitHub Actions (CI + documentation publishing)
 
@@ -116,7 +116,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 Notes:
 
-RUN_DB_INIT=false is recommended when using Flyway migrations.
+RUN_DB_INIT=false is recommended when using Alembic migrations.
 
 Set RUN_DB_INIT=true only for local rapid development without migrations.
 
@@ -128,15 +128,15 @@ Create the database:
 
 createdb budget_db
 
-#### Using Flyway (Recommended)
+#### Using Alembic (Recommended)
 
 Run migrations:
 
-flyway migrate
+ENV_FILE=.env.test python -m alembic upgrade head
 
 ### Development Mode (Optional)
 
-If not using Flyway:
+If not using Alembic:
 
 RUN_DB_INIT=true
 
@@ -175,12 +175,16 @@ Backend test suite includes:
 - [ExpenseService tests](backend/tests/test_expense_service.py): validates expense input and service behavior.
 - [IncomeService tests](backend/tests/test_income_service.py): validates income input and service behavior.
 - [ReportService tests](backend/tests/test_report_service.py): verifies month boundary rules and reporting contract behavior.
+- [Repository integration tests](backend/tests/integration/test_integration_repositories.py): real DB-backed repository CRUD, constraints, and rollback behavior.
+- [DB failure-mode integration tests](backend/tests/integration/test_db_failure_modes.py): simulated disconnect/timeout/transaction failures with graceful API envelopes.
+- [Dedicated E2E budget flow](backend/tests/integration/test_e2e_budget_flow.py): register -> login -> create budget -> add expense -> summary with DB-state assertions.
 
 ### Current Backend Test Structure
 
 - [backend/tests/test_http_controllers.py](backend/tests/test_http_controllers.py): route/controller tests (HTTP contracts, validation, protected endpoints, and controller error paths).
 - [backend/tests/test_error_handlers.py](backend/tests/test_error_handlers.py): middleware/dependency error handling tests (error code mapping, envelope shape, and auth token edge cases).
 - [backend/tests/test_auth_service.py](backend/tests/test_auth_service.py), [backend/tests/test_budget_service.py](backend/tests/test_budget_service.py), [backend/tests/test_expense_service.py](backend/tests/test_expense_service.py), [backend/tests/test_income_service.py](backend/tests/test_income_service.py), [backend/tests/test_report_service.py](backend/tests/test_report_service.py): service-layer business logic tests.
+- [backend/tests/integration/test_integration_repositories.py](backend/tests/integration/test_integration_repositories.py), [backend/tests/integration/test_db_failure_modes.py](backend/tests/integration/test_db_failure_modes.py), [backend/tests/integration/test_e2e_budget_flow.py](backend/tests/integration/test_e2e_budget_flow.py): Sprint 3 real-DB integration depth and reliability coverage.
 
 Frontend tests (from the mobile directory):
 
@@ -261,6 +265,8 @@ export_openapi.py
 tests/
 
 ## Status
+
+Current Sprint 3 status and latest quality metrics: [deliverable-package/reports/status/sprint3_metrics_summary.json](deliverable-package/reports/status/sprint3_metrics_summary.json)
 
 Backend API complete and production-structured.
 Frontend MVP implementation completed.

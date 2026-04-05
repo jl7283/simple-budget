@@ -1,5 +1,7 @@
 # STRIDE Threat Model Analysis - Simple Budget API
 
+> Note: This is a Sprint 2 historical snapshot. Current implementation status may differ in later sprints (for example, lockout persistence and migration tooling).
+
 **Date**: March 2026 (Sprint 2)  
 **System**: Cross-Platform Budgeting Application Backend (FastAPI + PostgreSQL)  
 **Scope**: REST API endpoints for authentication, budgets, expenses, incomes, and reports

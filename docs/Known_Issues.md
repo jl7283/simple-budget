@@ -48,7 +48,8 @@ Workarounds:
 ## Security Limitations
 
 - No multi-factor authentication.
-- Login lockout/rate limiting state is in-memory by default (not distributed across instances).
+- Rate limiting state is in-memory by default (not distributed across instances).
+- Login lockout state is persisted in PostgreSQL.
 - Basic CORS configuration.
 
 Workarounds:
