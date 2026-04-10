@@ -16,7 +16,6 @@ from app.controllers import (
     expense_router,
     report_router,
 )
-from slowapi import _rate_limit_exceeded_handler as rate_limit_exception_handler
 from app.middleware.error_handler import (
     rate_limit_exception_handler,
     validation_exception_handler,
@@ -35,6 +34,7 @@ async def lifespan(_: FastAPI):
     """Initialize shared resources at app startup."""
     init_db()
     yield
+
 
 app = FastAPI(
     title=settings.APP_NAME,
