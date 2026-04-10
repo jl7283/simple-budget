@@ -239,6 +239,3 @@ docker compose -f docker-compose.test.yml up -d
 This starts a Postgres 15 instance on port **5433** with `tmpfs` (RAM-only) storage.
 The integration conftest loads `.env.test`, clears the settings cache, and uses
 transaction-rollback isolation so every test starts with a clean slate.
-
-Set `RATE_LIMIT_ENABLED=false` in `.env.test` (already done) to prevent slowapi
-from blocking repeated test requests against the same IP.
