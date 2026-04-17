@@ -26,6 +26,7 @@ class Settings(BaseSettings):
 
     # Rate limiting (all configurable via .env)
     RATE_LIMIT_ENABLED: bool = True
+    TEST_ENDPOINTS_ENABLED: bool = False
     LOGIN_RATE_LIMIT: str = "5/minute"
     REGISTER_RATE_LIMIT: str = "3/minute"
     GLOBAL_RATE_LIMIT: str = "60/minute"

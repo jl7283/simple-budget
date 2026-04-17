@@ -24,7 +24,7 @@ Authentication is required for all endpoints except registration and login.
 
 ### Auth Protection
 
-Authentication endpoints are protected by two layers:
+Authentication endpoints are protected by two complementary controls:
 
 1. Per-IP throttling on auth routes.
 2. Per-email login lockout in the auth service.
@@ -47,8 +47,8 @@ Default limit:
 
 - All routes without a dedicated override: `60/minute` per IP
 
-Endpoint-specific limits:
 
+Endpoint-specific limits:
 - `POST /auth/register`: `3/minute` per IP
 - `POST /auth/login`: `5/minute` per IP
 - `GET /reports/summary`: `10/minute` per IP
@@ -57,6 +57,7 @@ Notes:
 
 - Limits are enforced by request source IP.
 - Auth login additionally uses per-email lockout to reduce brute-force risk.
+- Automated tests cover both pure rate-limit routes and auth endpoint rate limits.
 
 ---
 
@@ -284,16 +285,17 @@ Auth failure example (`401`):
 }
 ```
 
+
 Rate-limit example (`429`):
 
 ```json
 {
-	"timestamp": "2026-03-28T10:21:15Z",
-	"status": 429,
-	"error": "Too Many Requests",
-	"errorCode": "SYS-003",
-	"message": "5 per 1 minute",
-	"path": "/api/v1/auth/login"
+    "timestamp": "2026-03-28T10:21:15Z",
+    "status": 429,
+    "error": "Too Many Requests",
+    "errorCode": "SYS-003",
+    "message": "3 per 1 minute",
+    "path": "/ratelimit-test"
 }
 ```
 

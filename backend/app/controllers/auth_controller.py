@@ -16,6 +16,16 @@ settings = get_settings()
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
+def _conditional_limit(limit_value: str):
+    """Apply slowapi limit only when rate limiting is enabled."""
+    def _decorator(func):
+        if not settings.RATE_LIMIT_ENABLED:
+            return func
+        return limiter.limit(limit_value)(func)
+
+    return _decorator
+
+
 @router.post(
     "/register",
     response_model=UserRegisterResponse,
@@ -27,7 +37,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
         429: {"description": "Too many registration attempts"},
     },
 )
-@limiter.limit(settings.REGISTER_RATE_LIMIT)
+@_conditional_limit(settings.REGISTER_RATE_LIMIT)
 async def register(
     request: Request,
     body: UserRegisterRequest,
@@ -55,7 +65,7 @@ async def register(
         429: {"description": "Too many login attempts — back off and retry"},
     },
 )
-@limiter.limit(settings.LOGIN_RATE_LIMIT)
+@_conditional_limit(settings.LOGIN_RATE_LIMIT)
 async def login(
     request: Request,
     body: UserLoginRequest,
