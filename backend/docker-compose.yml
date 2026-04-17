@@ -1,21 +1,51 @@
 services:
   db:
     image: postgres:15
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: budget_user
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: budget_db
+      POSTGRES_USER: ${POSTGRES_USER:-budget_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:-budget_db}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-budget_user} -d ${POSTGRES_DB:-budget_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   app:
     build: .
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://budget_user:secret@db:5432/budget_db
+      DATABASE_URL: postgresql://${POSTGRES_USER:-budget_user}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@db:5432/${POSTGRES_DB:-budget_db}
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      GLOBAL_RATE_LIMIT: ${GLOBAL_RATE_LIMIT:-60/minute}
+      LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-5/minute}
+      REGISTER_RATE_LIMIT: ${REGISTER_RATE_LIMIT:-3/minute}
+      REPORT_RATE_LIMIT: ${REPORT_RATE_LIMIT:-10/minute}
+      LOGIN_LOCKOUT_MAX_ATTEMPTS: ${LOGIN_LOCKOUT_MAX_ATTEMPTS:-5}
+      LOGIN_LOCKOUT_WINDOW_MINUTES: ${LOGIN_LOCKOUT_WINDOW_MINUTES:-15}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-["http://localhost:3000","http://frontend:3000"]}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: 
+        - CMD-SHELL
+        - python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
 volumes:
   pgdata:
