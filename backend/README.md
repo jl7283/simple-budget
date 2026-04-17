@@ -119,47 +119,6 @@ Common error codes:
 
 ---
 
-## Security Controls
-
-### Authentication and Abuse Protection
-
-- Public auth endpoints are `POST /api/v1/auth/register` and `POST /api/v1/auth/login`.
-- All other API routes require `Authorization: Bearer <token>`.
-- Login abuse protection is enforced at two layers:
-	- Per-IP request throttling.
-	- Per-email lockout after repeated failed login attempts.
-
-Current defaults (configurable via environment variables):
-
-- `GLOBAL_RATE_LIMIT=60/minute`
-- `REGISTER_RATE_LIMIT=3/minute`
-- `LOGIN_RATE_LIMIT=5/minute`
-- `REPORT_RATE_LIMIT=10/minute`
-- `LOGIN_LOCKOUT_MAX_ATTEMPTS=5`
-- `LOGIN_LOCKOUT_WINDOW_MINUTES=15`
-
-### Error Response Contract
-
-The backend uses a standard JSON error envelope for API errors, including auth and rate-limit responses:
-
-```json
-{
-	"timestamp": "2026-03-28T10:21:15Z",
-	"status": 429,
-	"error": "Too Many Requests",
-	"errorCode": "SYS-003",
-	"message": "5 per 1 minute",
-	"path": "/api/v1/auth/login"
-}
-```
-
-Common codes:
-
-- `VAL-001`: Invalid input
-- `AUTH-001`: Missing or invalid token
-- `AUTH-004`: Invalid login credentials
-- `SYS-003`: Rate limit exceeded
-
 ## Running Tests
 
 Run all tests from the `backend/` directory:
@@ -240,5 +199,70 @@ This starts a Postgres 15 instance on port **5433** with `tmpfs` (RAM-only) stor
 The integration conftest loads `.env.test`, clears the settings cache, and uses
 transaction-rollback isolation so every test starts with a clean slate.
 
-Set `RATE_LIMIT_ENABLED=false` in `.env.test` (already done) to prevent slowapi
-from blocking repeated test requests against the same IP.
+---
+
+## Deployment
+
+### Prerequisites
+
+- Docker Engine 24+
+- A `.env` file created from `.env.example` with all `REQUIRED` values filled in.
+
+### Production deployment steps
+
+```bash
+# 1. Create .env from the template
+cp .env.example .env
+
+# 2. Fill in SECRET_KEY (copy the output into .env)
+python -c "import secrets; print(secrets.token_hex(32))"
+
+# 3. Set a strong POSTGRES_PASSWORD in .env
+
+# 4. Start the stack
+docker compose up --build -d
+
+# 5. Run database migrations
+docker compose exec app python -m alembic upgrade head
+
+# 6. Confirm the stack is healthy
+docker compose ps
+curl http://localhost:8000/health
+```
+
+### Environment variable injection
+
+`docker-compose.yml` uses `${VAR:-default}` syntax so every setting can be
+overridden without editing the file. Variables marked `:?` cause compose to
+abort with a clear error if they are missing (e.g. `SECRET_KEY`, `POSTGRES_PASSWORD`).
+
+### Non-root container
+
+The application container runs as `appuser` (non-root). The `COPY` instructions
+in `Dockerfile` only copy `app/`, `migrations/`, and `alembic.ini` — test files,
+`.env` files, performance scripts, and evidence artefacts are excluded via
+`.dockerignore`.
+
+---
+
+## Smoke Test (Sprint 5)
+
+Run after every deployment to validate the minimum API contracts:
+
+```bash
+# Against local Docker Compose
+python scripts/smoke_test.py
+
+# Against a remote host
+BASE_URL=https://your-staging-host python scripts/smoke_test.py
+```
+
+The smoke test covers:
+
+1. `GET /health` returns 200 with `status: healthy`
+2. `GET /` returns version info
+3. Schema validation errors return the standard error envelope
+4. Protected endpoints without a token return 401
+5. Full E2E flow: register → login → create budget → add expense → monthly summary
+
+Exit code 0 = all checks passed. Exit code 1 = one or more failures.
