@@ -13,7 +13,7 @@ from app.schemas.error_schemas import ErrorCodes
 from tests.integration.conftest import auth_headers, register_and_login
 
 
-_REQUIRED_FIELDS = {"timestamp", "status", "error", "errorCode", "message", "path"}
+_REQUIRED_FIELDS = {"timestamp", "status", "error", "errorCode", "message", "path", "requestId"}
 
 
 def _assert_db_failure_envelope(resp, expected_path: str):

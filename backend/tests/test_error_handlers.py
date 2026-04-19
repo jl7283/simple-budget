@@ -421,7 +421,7 @@ class TestErrorEnvelopeConsistency:
     Regardless of which handler fires (validation, ValueError, HTTPException, etc.)
     """
 
-    REQUIRED_FIELDS = {"timestamp", "status", "error", "errorCode", "message", "path"}
+    REQUIRED_FIELDS = {"timestamp", "status", "error", "errorCode", "message", "path", "requestId"}
 
     def test_validation_error_has_full_envelope(self, unauth_client):
         """Pydantic validation error → validation_exception_handler."""

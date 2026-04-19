@@ -17,8 +17,10 @@ Merged from: test_controllers.py + unique tests from test_api_controllers.py
 import pytest
 from decimal import Decimal
 from uuid import uuid4
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.main import app
+import app.main as main_module
 from app.schemas.error_schemas import ErrorCodes
 from tests.conftest import (
     make_user,
@@ -48,6 +50,64 @@ def test_health_endpoint(client):
     data = response.json()
     assert data["status"] == "healthy"
     assert "version" in data
+
+
+def test_health_endpoint_sets_request_id_header(client):
+    """Middleware should attach X-Request-ID to responses."""
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert "X-Request-ID" in response.headers
+    assert response.headers["X-Request-ID"]
+
+
+def test_health_endpoint_preserves_client_request_id_header(client):
+    """Middleware should echo caller-provided X-Request-ID."""
+    request_id = "req-12345"
+    response = client.get("/health", headers={"X-Request-ID": request_id})
+    assert response.status_code == 200
+    assert response.headers.get("X-Request-ID") == request_id
+
+
+def test_readiness_endpoint_returns_200_when_db_available(client, monkeypatch):
+    """GET /ready should report ready when DB connectivity succeeds."""
+
+    class _DummyConnection:
+        def execute(self, _stmt):
+            return None
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    class _DummyEngine:
+        def connect(self):
+            return _DummyConnection()
+
+    monkeypatch.setattr(main_module, "engine", _DummyEngine())
+
+    response = client.get("/ready")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ready"
+    assert data["database"] == "ok"
+
+
+def test_readiness_endpoint_returns_503_when_db_unavailable(client, monkeypatch):
+    """GET /ready should report not_ready when DB connectivity fails."""
+
+    class _DummyEngine:
+        def connect(self):
+            raise SQLAlchemyError("db down")
+
+    monkeypatch.setattr(main_module, "engine", _DummyEngine())
+
+    response = client.get("/ready")
+    assert response.status_code == 503
+    data = response.json()
+    assert data["status"] == "not_ready"
+    assert data["database"] == "unreachable"
 
 
 def test_root_endpoint(client):

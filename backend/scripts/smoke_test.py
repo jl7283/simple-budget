@@ -73,15 +73,22 @@ def check_health():
     check("/health.status == healthy", body.get("status") == "healthy", str(body))
 
 
+def check_readiness():
+    section("2. Readiness check")
+    status, body = _request("GET", "/ready")
+    check("GET /ready returns 200", status == 200, f"got {status}")
+    check("/ready.status == ready", body.get("status") == "ready", str(body))
+
+
 def check_root():
-    section("2. Root endpoint")
+    section("3. Root endpoint")
     status, body = _request("GET", "/")
     check("GET / returns 200", status == 200)
     check("/ contains version", "version" in body)
 
 
 def check_auth_validation():
-    section("3. Auth — schema validation")
+    section("4. Auth — schema validation")
     status, body = _request("POST", "/api/v1/auth/register", {"email": "not-an-email", "password": "x"})
     check("Register with invalid email returns 400", status == 400, f"got {status}")
     check("Error envelope has errorCode", "errorCode" in body)
@@ -91,7 +98,7 @@ def check_auth_validation():
 
 
 def check_no_token_returns_401():
-    section("4. Auth — protected endpoints require token")
+    section("5. Auth — protected endpoints require token")
     for path in ["/api/v1/expenses/current-month", "/api/v1/budgets/current-month"]:
         status, body = _request("GET", path)
         check(f"GET {path} without token → 401", status == 401, f"got {status}")
@@ -99,7 +106,7 @@ def check_no_token_returns_401():
 
 
 def check_e2e_flow():
-    section("5. End-to-end: register → login → budget → expense → summary")
+    section("6. End-to-end: register → login → budget → expense → summary")
 
     # Use a unique email per run so repeated smoke tests don't collide
     ts = int(time.time())
@@ -147,6 +154,7 @@ def main():
     print(f"Started: {datetime.now(timezone.utc).isoformat()}Z")
 
     check_health()
+    check_readiness()
     check_root()
     check_auth_validation()
     check_no_token_returns_401()

@@ -1,15 +1,20 @@
 
+import logging
+from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy import text
 from contextlib import asynccontextmanager
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.config import get_settings
 from app.models import init_db
+from app.models.base import engine
 from app.rate_limiter import limiter
 from app.controllers import (
     auth_router,
@@ -29,6 +34,7 @@ from app.middleware.error_handler import (
 )
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def _conditional_limit(limit_value: str):
@@ -55,6 +61,22 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    """Attach a request ID to each request for traceability across logs/errors."""
+    request_id = request.headers.get("X-Request-ID") or str(uuid4())
+    request.state.request_id = request_id
+
+    logger.info(f"[request_id={request_id}] Incoming {request.method} {request.url.path}")
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    logger.info(
+        f"[request_id={request_id}] Completed {request.method} {request.url.path} "
+        f"status={response.status_code}"
+    )
+    return response
+
 # ---------------------------------------------------------------------------
 # Rate limiting — only enabled when RATE_LIMIT_ENABLED=true (default).
 # Set RATE_LIMIT_ENABLED=false in .env.test to disable for integration tests.
@@ -71,8 +93,8 @@ app.add_middleware(
     allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT"],
-    allow_headers=["Authorization", "Content-Type"],
-    expose_headers=[],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    expose_headers=["X-Request-ID"],
 )
 
 # Exception handlers
@@ -109,6 +131,33 @@ async def health_check():
         "status": "healthy",
         "service": settings.APP_NAME,
         "version": settings.APP_VERSION,
+    }
+
+
+@app.get("/ready", tags=["Health"])
+@limiter.exempt
+async def readiness_check():
+    """Readiness check endpoint with DB connectivity validation."""
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except SQLAlchemyError as exc:
+        logger.error(f"Readiness DB check failed: {str(exc)}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "not_ready",
+                "service": settings.APP_NAME,
+                "version": settings.APP_VERSION,
+                "database": "unreachable",
+            },
+        )
+
+    return {
+        "status": "ready",
+        "service": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "database": "ok",
     }
 
 # Root endpoint (must be after all routers and test endpoints)

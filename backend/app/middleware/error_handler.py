@@ -88,6 +88,7 @@ def _week4_payload(
     details: list[dict] | None = None,
 ) -> dict:
     """Build the standard Week-4 error envelope."""
+    request_id = getattr(getattr(request, "state", None), "request_id", None)
     payload = {
         "timestamp": _utc_now_iso(),
         "status": status_code,
@@ -95,6 +96,7 @@ def _week4_payload(
         "errorCode": error_code,
         "message": message,
         "path": str(request.url.path),
+        "requestId": request_id,
     }
     if details:
         payload["details"] = details
@@ -130,7 +132,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         message="Invalid input data",
         details=details or None,
     )
-    logger.warning(f"Validation error on {request.url.path}: {details}")
+    request_id = getattr(getattr(request, "state", None), "request_id", "unknown")
+    logger.warning(f"[request_id={request_id}] Validation error on {request.url.path}: {details}")
     return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=payload)
 
 
@@ -149,7 +152,8 @@ async def value_error_handler(request: Request, exc: ValueError):
         error_code=code,
         message=message,
     )
-    logger.warning(f"Business logic error: {code} - {message}")
+    request_id = getattr(getattr(request, "state", None), "request_id", "unknown")
+    logger.warning(f"[request_id={request_id}] Business logic error: {code} - {message}")
     return JSONResponse(status_code=http_status, content=payload)
 
 
@@ -161,7 +165,8 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
         error_code=ErrorCodes.SYS_DATABASE_ERROR,
         message="Database constraint violation",
     )
-    logger.error(f"Database integrity error: {str(exc)}")
+    request_id = getattr(getattr(request, "state", None), "request_id", "unknown")
+    logger.error(f"[request_id={request_id}] Database integrity error: {str(exc)}")
     return JSONResponse(status_code=status.HTTP_409_CONFLICT, content=payload)
 
 
@@ -173,7 +178,8 @@ async def sqlalchemy_error_handler(request: Request, exc: SQLAlchemyError):
         error_code=ErrorCodes.SYS_DATABASE_ERROR,
         message="Database error occurred",
     )
-    logger.error(f"Database error: {str(exc)}")
+    request_id = getattr(getattr(request, "state", None), "request_id", "unknown")
+    logger.error(f"[request_id={request_id}] Database error: {str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content=payload
     )
@@ -187,7 +193,8 @@ async def general_exception_handler(request: Request, exc: Exception):
         error_code=ErrorCodes.SYS_INTERNAL_ERROR,
         message="Internal server error",
     )
-    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
+    request_id = getattr(getattr(request, "state", None), "request_id", "unknown")
+    logger.error(f"[request_id={request_id}] Unhandled exception: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content=payload
     )
