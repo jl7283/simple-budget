@@ -352,7 +352,7 @@ def assert_error_shape(body: dict, expected_status: int, expected_error_code: st
     assert body.get("errorCode") == expected_error_code, (
         f"Expected errorCode '{expected_error_code}', got {body.get('errorCode')}"
     )
-    for field in ("timestamp", "error", "message", "path"):
+    for field in ("timestamp", "error", "message", "path", "requestId"):
         assert field in body, f"Missing '{field}' in error response"
 
 
