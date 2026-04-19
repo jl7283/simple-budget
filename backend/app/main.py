@@ -1,5 +1,6 @@
 
 import logging
+import re
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
@@ -35,6 +36,15 @@ from app.middleware.error_handler import (
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
+_REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
+
+
+def _normalize_request_id(header_value: str | None) -> str:
+    """Return a safe request ID value for logs/headers."""
+    candidate = (header_value or "").strip()
+    if _REQUEST_ID_RE.match(candidate):
+        return candidate
+    return str(uuid4())
 
 
 def _conditional_limit(limit_value: str):
@@ -65,7 +75,7 @@ app = FastAPI(
 @app.middleware("http")
 async def request_id_middleware(request: Request, call_next):
     """Attach a request ID to each request for traceability across logs/errors."""
-    request_id = request.headers.get("X-Request-ID") or str(uuid4())
+    request_id = _normalize_request_id(request.headers.get("X-Request-ID"))
     request.state.request_id = request_id
 
     logger.info(f"[request_id={request_id}] Incoming {request.method} {request.url.path}")
@@ -136,13 +146,14 @@ async def health_check():
 
 @app.get("/ready", tags=["Health"])
 @limiter.exempt
-async def readiness_check():
+def readiness_check(request: Request):
     """Readiness check endpoint with DB connectivity validation."""
+    request_id = getattr(getattr(request, "state", None), "request_id", "unknown")
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
     except SQLAlchemyError as exc:
-        logger.error(f"Readiness DB check failed: {str(exc)}")
+        logger.error(f"[request_id={request_id}] Readiness DB check failed: {str(exc)}")
         return JSONResponse(
             status_code=503,
             content={
