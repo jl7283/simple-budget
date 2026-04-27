@@ -1,6 +1,7 @@
 import AppContext from "@/app/context/AppContext";
 import AlertMessage from "@/components/utility/AlertMessage";
 import getErrorMessage from "@/utilities/getErrorMessage";
+import getApiUrl from "@/utilities/api";
 import { useIsFocused } from "@react-navigation/native";
 import { router } from "expo-router";
 import { useContext, useEffect, useState } from "react";
@@ -32,7 +33,7 @@ export default function LoginPage() {
 
     const handleLoginSubmit = async () => {
         console.log("Form Submitted!");
-        const url = "http://localhost:8000/api/v1/auth/login";
+        const url = getApiUrl("/auth/login");
         const options = {
             method: "POST",
             headers: {

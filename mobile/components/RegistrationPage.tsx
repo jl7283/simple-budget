@@ -1,5 +1,6 @@
 import AlertMessage from "@/components/utility/AlertMessage";
 import sharedStyles from "@/styles/shared";
+import getApiUrl from "@/utilities/api";
 import getErrorMessage from "@/utilities/getErrorMessage";
 import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
@@ -44,7 +45,7 @@ export default function RegistrationPage() {
       return;
     }
 
-    const url = "http://localhost:8000/api/v1/auth/register";
+    const url = getApiUrl("/auth/register");
     const options = {
       method: "POST",
       headers: {

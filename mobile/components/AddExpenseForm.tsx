@@ -1,6 +1,7 @@
 import AppContext from "@/app/context/AppContext";
 import AlertMessage from "@/components/utility/AlertMessage";
 import sharedStyles from "@/styles/shared";
+import getApiUrl from "@/utilities/api";
 import getErrorMessage from "@/utilities/getErrorMessage";
 import { useIsFocused } from "@react-navigation/native";
 import { Redirect, useRouter } from "expo-router";
@@ -19,7 +20,7 @@ export function AddExpenseForm() {
 
     const checkBudgetExists = useCallback(async () => {
         try {
-            const url = "http://localhost:8000/api/v1/budgets/current-month";
+            const url = getApiUrl("/budgets/current-month");
             const options = {
                 method: "GET",
                 headers: {
@@ -46,7 +47,7 @@ export function AddExpenseForm() {
 
     const handleFormSubmit = async () => {
         console.log("Form Submitted!");
-        const url = "http://localhost:8000/api/v1/expenses";
+        const url = getApiUrl("/expenses");
         const options = {
             method: "POST",
             headers: {

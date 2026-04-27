@@ -4,6 +4,7 @@ import { Redirect } from "expo-router";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
+import getApiUrl from "@/utilities/api";
 import getErrorMessage from "@/utilities/getErrorMessage";
 import ExpenseCard from "./utility/ExpenseCard";
 
@@ -30,7 +31,7 @@ function WelcomePage() {
 
   const fetchBudget = useCallback(async () => {
     try {
-      const url = "http://localhost:8000/api/v1/budgets/current-month";
+      const url = getApiUrl("/budgets/current-month");
       const options = {
         method: "GET",
         headers: {
@@ -75,7 +76,7 @@ function WelcomePage() {
     }
 
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const url = "http://localhost:8000/api/v1/budgets";
+    const url = getApiUrl("/budgets");
     const options = {
       method: "POST",
       headers: {
@@ -112,7 +113,7 @@ function WelcomePage() {
   };
 
   const fetchExpenses = useCallback(async () => {
-    const url = "http://localhost:8000/api/v1/expenses/current-month";
+    const url = getApiUrl("/expenses/current-month");
     const options = {
       method: "GET",
       headers: {

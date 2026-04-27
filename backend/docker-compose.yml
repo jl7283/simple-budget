@@ -6,6 +6,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-budget_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       POSTGRES_DB: ${POSTGRES_DB:-budget_db}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-budget_user} -d ${POSTGRES_DB:-budget_db}
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
