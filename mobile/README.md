@@ -16,6 +16,18 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
+3. Configure API endpoint (recommended)
+
+   Create a `.env` file in `mobile/` and set:
+
+   ```bash
+   EXPO_PUBLIC_API_BASE_URL=http://localhost:8000
+   # Optional, defaults to /api/v1
+   EXPO_PUBLIC_API_PREFIX=/api/v1
+   # Optional, when true throws in production if API base URL is missing
+   EXPO_PUBLIC_API_STRICT=false
+   ```
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)

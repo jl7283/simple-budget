@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
 import LoginPage from "@/components/LoginPage";
 import RegistrationPage from "@/components/RegistrationPage";
 import AppContext from "@/app/context/AppContext";
+import getApiUrl from "@/utilities/api";
 
 const mockReplace = jest.fn();
 
@@ -69,7 +70,7 @@ describe("Authentication E2E Tests", () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          "http://localhost:8000/api/v1/auth/login",
+          getApiUrl("/auth/login"),
           expect.objectContaining({ method: "POST" })
         );
       });
@@ -142,7 +143,7 @@ describe("Authentication E2E Tests", () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          "http://localhost:8000/api/v1/auth/register",
+          getApiUrl("/auth/register"),
           expect.any(Object)
         );
       });

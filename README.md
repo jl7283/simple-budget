@@ -266,7 +266,5 @@ tests/
 
 ## Status
 
-Current Sprint 3 status and latest quality metrics: [deliverable-package/reports/status/sprint3_metrics_summary.json](deliverable-package/reports/status/sprint3_metrics_summary.json)
-
 Backend API complete and production-structured.
 Frontend MVP implementation completed.

@@ -62,6 +62,7 @@ get_settings.cache_clear()
 # Import app after env is loaded so all settings are correct.
 from sqlalchemy import create_engine
 from sqlalchemy import event
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, Session
 from fastapi.testclient import TestClient
 
@@ -83,9 +84,29 @@ _engine = create_engine(
 )
 
 
+def _assert_test_db_available() -> None:
+    """Fail fast with one actionable error if test PostgreSQL is unavailable."""
+    try:
+        with _engine.connect():
+            pass
+    except OperationalError as exc:
+        pytest.exit(
+            "\n[Integration tests] PostgreSQL test DB is unreachable at "
+            + _settings.DATABASE_URL
+            + "\n"
+            + "Start it first:\n"
+            + "  docker compose -f docker-compose.test.yml up -d\n"
+            + "Then rerun integration/full backend tests.\n"
+            + "Original error: "
+            + str(exc),
+            returncode=2,
+        )
+
+
 @pytest.fixture(scope="session", autouse=True)
 def create_tables():
     """Drop and recreate all tables once per test session."""
+    _assert_test_db_available()
     Base.metadata.drop_all(bind=_engine)
     Base.metadata.create_all(bind=_engine)
     yield

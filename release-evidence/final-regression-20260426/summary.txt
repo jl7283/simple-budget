@@ -1,0 +1,17 @@
+Final Regression Evidence Summary
+Generated: 2026-04-26 21:41:02 -04:00
+Commit: 50d801b
+
+Backend CI:
+- Command: python -m pytest -q --junitxml ...
+- Result: PASS (249 passed)
+- Artifacts:
+  - release-evidence/final-regression-20260426/backend/backend-ci.log
+  - release-evidence/final-regression-20260426/backend/pytest-junit.xml
+
+Mobile CI:
+- Command: npm test -- --ci --runInBand --watchAll=false --coverage --json --outputFile ...
+- Result: PASS (8 suites, 30 tests)
+- Artifacts:
+  - release-evidence/final-regression-20260426/mobile/mobile-ci.log
+  - release-evidence/final-regression-20260426/mobile/jest-results.json
